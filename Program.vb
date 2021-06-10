@@ -1,8 +1,7 @@
-Imports System
 Imports System.IO
 Imports System.Net
-Imports System.Text
-Imports ReadExcel
+Imports System.Web
+Imports Newtonsoft.Json.Linq
 
 Module Program
     Sub Main(args As String())
@@ -18,8 +17,22 @@ Module Program
         'Dim se As New SendEmail
         'Console.Write("Before Read")
         'se.sendEmail(prop, "Test Message", "D:\TamilVanan\Temp\OC271JOB 09-Apr-21 2-58-21 PM.xls")
+        Dim filePath As String = "D:\TamilVanan\Temp\OC259JOB 23-Mar-21 7-23-20 PM.xls"
+        Dim length = filePath.Length
+        Dim startIndex = filePath.LastIndexOf("\") + 1
+        Dim sunLen = length - filePath.LastIndexOf("\") - 1
+
+        Dim fileName As String = filePath.Substring(startIndex, sunLen)
+        Console.WriteLine(filePath)
+        Console.WriteLine(fileName)
         Console.WriteLine("Sending")
-        WebrequestWithPost("http://127.0.0.1:8080/MappingServlet/EmailServlet", "D:\TamilVanan\Temp\OC259JOB 23-Mar-21 7-23-20 PM.xls", "application/x-www-form-urlencoded")
+        Dim query As String = "OC259JOB 23-Mar-21 7-23-20 PM.xls"
+        query = HttpUtility.UrlEncode(query)
+
+        Dim url As String = "http://127.0.0.1:8080/MappingServlet/EmailServlet?file_name=" & query & "&template_name=TestTemplate"
+
+        Console.WriteLine(url)
+        WebrequestWithPost(url, "D:\TamilVanan\Temp\OC259JOB 23-Mar-21 7-23-20 PM.xls", "application/x-www-form-urlencoded")
         Console.WriteLine("Sent")
     End Sub
 
@@ -51,13 +64,12 @@ Module Program
         Next
     End Sub
 
-    Public Function WebrequestWithPost(ByVal url As String, ByVal fileName As String, ByVal contentType As String) As String
-        'Dim postDataAsByteArray As Byte() = dataEncoding.GetBytes(dataToPost)
-
+    Public Function WebrequestWithPost(ByVal url As String, ByVal fileName As String, ByVal contentType As String) As String()
         Dim postDataAsByteArray As Byte() = FileToByteArray(fileName)
         Dim returnValue As String = String.Empty
+        Dim outputArray() As String = New String(1) {"0", "0"}
         Try
-            Dim webRequest As HttpWebRequest = webRequest.CreateHttp(url)  'change to: dim webRequest as var = DirectCast(WebRequest.Create(url), HttpWebRequest) if you are your .NET Version is lower than 4.5
+            Dim webRequest As HttpWebRequest = webRequest.CreateHttp(url)
             If (Not (webRequest) Is Nothing) Then
                 webRequest.AllowAutoRedirect = False
                 webRequest.Method = "POST"
@@ -88,7 +100,13 @@ Module Program
             'handle this your own way, something serious happened here.
             Console.WriteLine(ex.Message)
         End Try
-        Return returnValue
+
+        Dim jObect = JObject.Parse(returnValue)
+
+        outputArray(0) = jObect.SelectToken("plannedPages")
+        outputArray(1) = jObect.SelectToken("exportedPages")
+
+        Return outputArray
     End Function
 
     Public Function FileToByteArray(ByVal _FileName As String) As Byte()
