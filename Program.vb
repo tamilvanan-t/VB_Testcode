@@ -29,7 +29,18 @@ Module Program
         Dim query As String = "OC259JOB 23-Mar-21 7-23-20 PM.xls"
         query = HttpUtility.UrlEncode(query)
 
-        Dim url As String = "http://127.0.0.1:8080/MappingServlet/EmailServlet?file_name=" & query & "&template_name=TestTemplate"
+        Dim process As String = "01 Main Assembly"
+        Dim lineNo As String = "Line_No_1"
+        Dim machineName As String = "Column Assy"
+        Dim machineDrwaing As String = "GRADE"
+        Dim subFolder As String = "INVBOM"
+        Dim partReferenceNumber As String = "112227  SAMBATH KUMAR S"
+        Dim plannedPages As String = "10"
+
+        Dim url As String = "http://127.0.0.1:8080/MappingServlet/EmailServlet?file_name=" + query + "&template_name=TestTemplate &process=" + HttpUtility.UrlEncode(process) +
+                                                                                                    "&lineNo=" + HttpUtility.UrlEncode(lineNo) + "&machineName=" + HttpUtility.UrlEncode(machineName) +
+                                                                                                    "&machineDrwaing=" + HttpUtility.UrlEncode(machineDrwaing) + "&subFolder=" + HttpUtility.UrlEncode(subFolder) +
+                                                                                                    "&partReferenceNumber=" + HttpUtility.UrlEncode(partReferenceNumber) + "&plannedPages=" + HttpUtility.UrlEncode(plannedPages)
 
         Console.WriteLine(url)
         WebrequestWithPost(url, "D:\TamilVanan\Temp\OC259JOB 23-Mar-21 7-23-20 PM.xls", "application/x-www-form-urlencoded")
