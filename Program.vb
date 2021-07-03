@@ -29,6 +29,7 @@ Module Program
         Dim query As String = "OC259JOB 23-Mar-21 7-23-20 PM.xls"
         query = HttpUtility.UrlEncode(query)
 
+        Dim templateName As String = "Template 3"
         Dim process As String = "01 Main Assembly"
         Dim lineNo As String = "Line_No_1"
         Dim machineName As String = "Column Assy"
@@ -37,14 +38,16 @@ Module Program
         Dim partReferenceNumber As String = "112227  SAMBATH KUMAR S"
         Dim plannedPages As String = "10"
 
-        Dim url As String = "http://127.0.0.1:8080/MappingServlet/EmailServlet?file_name=" + query + "&template_name=TestTemplate &process=" + HttpUtility.UrlEncode(process) +
+        Dim url As String = "http://127.0.0.1:8080/MappingServlet/EmailServlet?file_name=" + query + "&template_name=" + HttpUtility.UrlEncode(templateName) + "&process=" + HttpUtility.UrlEncode(process) +
                                                                                                     "&lineNo=" + HttpUtility.UrlEncode(lineNo) + "&machineName=" + HttpUtility.UrlEncode(machineName) +
                                                                                                     "&machineDrwaing=" + HttpUtility.UrlEncode(machineDrwaing) + "&subFolder=" + HttpUtility.UrlEncode(subFolder) +
                                                                                                     "&partReferenceNumber=" + HttpUtility.UrlEncode(partReferenceNumber) + "&plannedPages=" + HttpUtility.UrlEncode(plannedPages)
 
         Console.WriteLine(url)
-        WebrequestWithPost(url, "D:\TamilVanan\Temp\OC259JOB 23-Mar-21 7-23-20 PM.xls", "application/x-www-form-urlencoded")
+        'WebrequestWithPost(url, "D:\TamilVanan\Temp\OC259JOB 23-Mar-21 7-23-20 PM.xls", "application/x-www-form-urlencoded")
         Console.WriteLine("Sent")
+
+        searchFile("D:\TamilVanan\Temp\", "OC259JOB")
     End Sub
 
 
@@ -66,8 +69,9 @@ Module Program
         Dim wildcard = jobId & "*.xls"
         Console.WriteLine(wildcard)
 
-        For Each File As IO.FileInfo In Folder.GetFiles(wildcard, IO.SearchOption.TopDirectoryOnly)
-            fileNames.Add(File.FullName)
+        For Each File As String In Directory.GetFiles(reportPath, wildcard).OrderByDescending(Function(x) IO.File.GetCreationTime(x))
+            'For Each File As String In Directory.GetFiles(reportPath, wildcard)
+            fileNames.Add(File)
         Next
 
         For Each fileName As String In fileNames
@@ -78,7 +82,7 @@ Module Program
     Public Function WebrequestWithPost(ByVal url As String, ByVal fileName As String, ByVal contentType As String) As String()
         Dim postDataAsByteArray As Byte() = FileToByteArray(fileName)
         Dim returnValue As String = String.Empty
-        Dim outputArray() As String = New String(1) {"0", "0"}
+        Dim outputArray() As String = New String(2) {"0", "0", "0"}
         Try
             Dim webRequest As HttpWebRequest = webRequest.CreateHttp(url)
             If (Not (webRequest) Is Nothing) Then
@@ -115,7 +119,12 @@ Module Program
         Dim jObect = JObject.Parse(returnValue)
 
         outputArray(0) = jObect.SelectToken("plannedPages")
-        outputArray(1) = jObect.SelectToken("exportedPages")
+        outputArray(1) = jObect.SelectToken("thisExportedPages")
+        outputArray(2) = jObect.SelectToken("totalExportedPages")
+
+        Console.WriteLine("outputArray(0) " + outputArray(0))
+        Console.WriteLine("outputArray(1) " + outputArray(1))
+        Console.WriteLine("outputArray(2) " + outputArray(2))
 
         Return outputArray
     End Function
